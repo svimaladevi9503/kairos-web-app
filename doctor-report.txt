@@ -1,0 +1,662 @@
+﻿[1mReact Doctor[22m [2mv0.5.8[22m
+
+[90m  [39m
+
+  [33mΓÜá[39m [33mMaintainability: deslop/unused-dependency[39m
+    Unused dependency: `motion`
+[2m    ΓåÆ An unused dependency adds install time and supply-chain[22m
+[2m    surface without being used; remove it from package.json if[22m
+[2m    it is genuinely unused.[22m
+
+  [31mΓ£û[39m [31mAccessibility: react-doctor/require-reduced-motion[39m
+    Project uses a motion library but has no
+    prefers-reduced-motion handling ΓÇö required for
+    accessibility (WCAG 2.3.3)
+[2m    ΓåÆ Add `useReducedMotion()` from your animation library, or[22m
+[2m    a `@media (prefers-reduced-motion: reduce)` CSS query[22m
+
+[90m    package.json[39m
+
+  [33mΓÜá[39m [33mMaintainability: Large component is hard to read and change[39m [90m├ù8[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-giant-component[39m
+    Component "App" is 723 lines long, which is hard to read &
+    change. Split it into a few smaller components.
+[2m    ΓåÆ Pull each section into its own component so the parent is[22m
+[2m    easier to read, test, and change.[22m
+
+[90m    src/App.tsx:16[39m
+
+[90m    src/components/ApplicationsTracker.tsx:12[39m
+
+[90m    src/components/ChatbotPanel.tsx:14[39m
+
+[90m    src/components/JobCard.tsx:17[39m
+
+[90m    src/components/LoginPage.tsx:15[39m
+
+[90m    src/components/Navbar.tsx:26[39m
+
+[90m    src/components/SettingsPanel.tsx:17[39m
+
+[90m    src/components/UserProfilePanel.tsx:11[39m
+
+  [33mΓÜá[39m [33mBugs: Many related useState calls[39m [90m├ù8[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/prefer-useReducer[39m
+    18 useState calls in "App" can each trigger a separate
+    render.
+[2m    ΓåÆ Group related state in `useReducer` so one logical update[22m
+[2m    does not fan out into separate renders.[22m
+
+[90m    src/App.tsx:16[39m
+
+[90m    src/components/ApplicationsTracker.tsx:17[39m
+
+[90m    src/components/FeedbackRetrainingPanel.tsx:9[39m
+
+[90m    src/components/JobCard.tsx:26[39m
+
+[90m    src/components/JobScraper.tsx:10[39m
+
+[90m    src/components/LoginPage.tsx:23[39m
+
+[90m    src/components/SettingsPanel.tsx:26[39m
+
+[90m    src/components/UserProfilePanel.tsx:11[39m
+
+  [33mΓÜá[39m [33mBugs: Unversioned localStorage key[39m [90m├ù2[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/client-localstorage-no-version[39m
+    localStorage.setItem("kairos_saved_jobs",
+    JSON.stringify(...)) has no version, so changing the data
+    shape later crashes your users' saved sessions. Add one to
+    the key (e.g. "kairos_saved_jobs:v1").
+[2m    ΓåÆ Put a version in the storage key (e.g. "myKey:v1"). If[22m
+[2m    you change the data shape later, old saved data can be[22m
+[2m    ignored instead of crashing the app.[22m
+
+[90m    src/App.tsx:46[39m
+
+[90m    src/App.tsx:430[39m
+
+  [33mΓÜá[39m [33mBugs: State updates chained through effects[39m [90m├ù5[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-chain-state-updates[39m
+    Chaining state updates triggers an extra render each step.
+[2m    ΓåÆ Set all the related state together in the event handler[22m
+[2m    that starts it, instead of having one useEffect react to a[22m
+[2m    state change and set more state. See[22m
+[2m    https://react.dev/learn/you-might-not-need-an-effect#chains-of-computations[22m
+
+[90m    src/App.tsx:61-67[39m
+
+[90m    src/App.tsx:175[39m
+
+  [33mΓÜá[39m [33mBugs: Event logic handled in an effect[39m [90m├ù7[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-event-handler[39m
+    Faking an event handler with state plus a useEffect costs
+    an extra render & runs late.
+[2m    ΓåÆ Run the side effect in the event handler that triggers[22m
+[2m    it, instead of watching its state from a useEffect. See[22m
+[2m    https://react.dev/learn/you-might-not-need-an-effect#sharing-logic-between-event-handlers[22m
+
+[90m    src/App.tsx:66[39m
+
+[90m    src/App.tsx:169[39m
+
+[90m    src/App.tsx:238[39m
+
+[90m    src/components/ChatbotPanel.tsx:43[39m
+
+[90m    src/components/ChatbotPanel.tsx:56[39m
+
+[90m    src/components/ChatbotPanel.tsx:228-230[39m
+
+  [33mΓÜá[39m [33mBugs: Missing effect dependencies[39m [90m├ù8[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/exhaustive-deps[39m
+    `useEffect` can run with a stale `speakAnnouncement` & show
+    your users old data.
+[2m    ΓåÆ Don't blindly add missing dependencies. Read the hook[22m
+[2m    callback first.[22m
+[2m    [22m
+[2m    Bad:[22m
+[2m    useEffect(() => {[22m
+[2m      setCount(count + 1);[22m
+[2m    }, [count]);[22m
+[2m    [22m
+[2m    Better:[22m
+[2m    useEffect(() => {[22m
+[2m      setCount((currentCount) => currentCount + 1);[22m
+[2m    }, []);[22m
+[2m    [22m
+[2m    If the missing value is recreated every render, move it[22m
+[2m    inside the hook or stabilize it before adding it to deps.[22m
+
+[90m    src/App.tsx:135[39m
+
+[90m    src/App.tsx:186[39m
+
+[90m    src/App.tsx:250[39m
+
+[90m    src/App.tsx:411[39m
+
+[90m    src/components/ChatbotPanel.tsx:59[39m
+
+[90m    src/components/ChatbotPanel.tsx:224[39m
+
+[90m    src/components/ChatbotPanel.tsx:234[39m
+
+[90m    src/components/JobScraper.tsx:37[39m
+
+  [33mΓÜá[39m [33mPerformance: Independent awaits run sequentially[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/async-parallel[39m
+    These 3 sequential await statements run one after another
+    even though they look independent, so the page waits longer
+    than it needs to. Run them together with Promise.all()
+    instead
+[2m    ΓåÆ Use `const [a, b] = await Promise.all([fetchA(),[22m
+[2m    fetchB()])` so independent calls run at the same time[22m
+
+[90m    src/App.tsx:152[39m
+
+  [31mΓ£û[39m [31mBugs: Effect subscription or timer never cleaned up[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/effect-needs-cleanup[39m
+    `setTimeout` creates a timer in useEffect without returning
+    cleanup. Return a cleanup function so it does not leak
+    after unmount.
+[2m    ΓåÆ Return a cleanup function that stops the subscription or[22m
+[2m    timer: `return () => target.removeEventListener(name,[22m
+[2m    handler)` for listeners, `return () => clearInterval(id)`[22m
+[2m    or `clearTimeout(id)` for timers, or `return unsubscribe`[22m
+[2m    if the subscribe call already gave you one.[22m
+
+[90m    src/App.tsx:168[39m
+    [2mΓöî[22m[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[22m[2mΓöÉ[22m
+    [2mΓöé[22m [0m [90m 167 |[39m   [90m// Handle shared job ID link redirect[39m              [2mΓöé[22m
+    [2mΓöé[22m [31m[1m>[22m[39m[90m 168 |[39m   useEffect(() [33m=>[39m {                                  [2mΓöé[22m
+    [2mΓöé[22m  [90m     |[39m   [31m[1m^[22m[39m                                                  [2mΓöé[22m
+    [2mΓöé[22m  [90m 169 |[39m     [36mif[39m (jobs[33m.[39mlength [33m>[39m [35m0[39m) {[0m                           [2mΓöé[22m
+    [2mΓöö[22m[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[22m[2mΓöÿ[22m
+
+  [33mΓÜá[39m [33mBugs: Derived value copied into state[39m [90m├ù4[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-derived-state[39m
+    Storing "searchQuery" in state when you can derive it from
+    other values costs an extra render.
+[2m    ΓåÆ Work out the value while rendering (or with useMemo if[22m
+[2m    it's expensive) instead of copying it into useState through[22m
+[2m    a useEffect. See[22m
+[2m    https://react.dev/learn/you-might-not-need-an-effect#updating-state-based-on-props-or-state[22m
+
+[90m    src/App.tsx:176[39m
+
+[90m    src/components/ChatbotPanel.tsx:42-44[39m
+
+[90m    src/components/ChatbotPanel.tsx:229[39m
+
+  [33mΓÜá[39m [33mBugs: Effects chained together[39m [90m├ù2[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-effect-chain[39m
+    Your screen redraws several times from a single action
+    because one useEffect changes "activeTab", which sets off
+    this one.
+[2m    ΓåÆ Compute as much as possible during render (e.g. `const[22m
+[2m    isGameOver = round > 5`) and write all related state inside[22m
+[2m    the event handler that originally fires the chain. Each[22m
+[2m    effect link adds an extra render and makes the code rigid[22m
+[2m    as requirements evolve[22m
+
+[90m    src/App.tsx:237[39m
+
+[90m    src/components/ChatbotPanel.tsx:61[39m
+
+  [33mΓÜá[39m [33mBugs: Multiple setState calls in one effect[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-cascading-set-state[39m
+    4 setState calls in one useEffect redraw your screen each
+    time they run together.
+[2m    ΓåÆ Combine related updates in `useReducer` so one effect[22m
+[2m    does not redraw the screen once per `setState` call.[22m
+
+[90m    src/App.tsx:364[39m
+
+  [33mΓÜá[39m [33mPerformance: Bouncy easing animation[39m [90m├ù5[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-inline-bounce-easing[39m
+    Your users see a dated, tacky animate-bounce, so use a
+    subtle ease-out transform for a smoother finish.
+[2m    ΓåÆ Use `cubic-bezier(0.16, 1, 0.3, 1)` (ease-out-expo) for a[22m
+[2m    natural finish. Real objects don't bounce.[22m
+
+[90m    src/App.tsx:517[39m
+
+[90m    src/components/ApplicationsTracker.tsx:90[39m
+
+[90m    src/components/ApplicationsTracker.tsx:206[39m
+
+[90m    src/components/ChatbotPanel.tsx:242[39m
+
+[90m    src/components/HomeDashboard.tsx:52[39m
+
+  [33mΓÜá[39m [33mBugs: Button missing explicit type[39m [90m├ù69[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/button-has-type[39m
+    Your users can submit the form by accident because a
+    `<button>` with no `type` defaults to submit.
+[2m    ΓåÆ Set an explicit button `type` so plain buttons do not[22m
+[2m    submit forms by accident: `type="button"`, `"submit"`, or[22m
+[2m    `"reset"`.[22m
+
+[90m    src/App.tsx:522[39m
+
+[90m    src/App.tsx:574[39m
+
+[90m    src/components/ApplicationsTracker.tsx:95[39m
+
+[90m    src/components/ApplicationsTracker.tsx:219[39m
+
+[90m    src/components/ApplicationsTracker.tsx:237[39m
+
+[90m    src/components/ApplicationsTracker.tsx:252[39m
+
+[90m    src/components/ApplicationsTracker.tsx:362[39m
+
+[90m    src/components/ApplicationsTracker.tsx:449[39m
+
+[90m    src/components/ChatbotPanel.tsx:249[39m
+
+[90m    src/components/ChatbotPanel.tsx:395[39m
+
+[90m    src/components/FeedbackRetrainingPanel.tsx:206[39m
+
+[90m    src/components/HomeDashboard.tsx:58[39m
+
+[90m    src/components/HomeDashboard.tsx:85[39m
+
+[90m    src/components/HomeDashboard.tsx:180[39m
+
+[90m    src/components/HomeDashboard.tsx:216[39m
+
+[90m    src/components/HomeDashboard.tsx:264[39m
+
+[90m    src/components/JobCard.tsx:223[39m
+
+[90m    src/components/JobCard.tsx:234[39m
+
+[90m    src/components/JobCard.tsx:265[39m
+
+[90m    src/components/JobCard.tsx:281[39m
+
+[90m    src/components/JobCard.tsx:310[39m
+
+[90m    src/components/JobCard.tsx:362[39m
+
+[90m    src/components/JobCard.tsx:374[39m
+
+[90m    src/components/JobCard.tsx:386[39m
+
+[90m    src/components/JobCard.tsx:399[39m
+
+[90m    src/components/JobCard.tsx:415[39m
+
+[90m    src/components/JobScraper.tsx:104[39m
+
+[90m    src/components/JobScraper.tsx:139[39m
+
+[90m    src/components/LoginPage.tsx:121[39m
+
+[90m    src/components/LoginPage.tsx:134[39m
+
+[90m    src/components/LoginPage.tsx:149[39m
+
+[90m    src/components/Navbar.tsx:81[39m
+
+[90m    src/components/Navbar.tsx:95[39m
+
+[90m    src/components/Navbar.tsx:111[39m
+
+[90m    src/components/Navbar.tsx:127[39m
+
+[90m    src/components/Navbar.tsx:143[39m
+
+[90m    src/components/Navbar.tsx:159[39m
+
+[90m    src/components/Navbar.tsx:175[39m
+
+[90m    src/components/Navbar.tsx:191[39m
+
+[90m    src/components/Navbar.tsx:207[39m
+
+[90m    src/components/Navbar.tsx:227[39m
+
+[90m    src/components/Navbar.tsx:264[39m
+
+[90m    src/components/Navbar.tsx:292[39m
+
+[90m    src/components/Navbar.tsx:311[39m
+
+[90m    src/components/Navbar.tsx:329[39m
+
+[90m    src/components/Navbar.tsx:396[39m
+
+[90m    src/components/Navbar.tsx:420[39m
+
+[90m    src/components/Navbar.tsx:424[39m
+
+[90m    src/components/Navbar.tsx:428[39m
+
+[90m    src/components/Navbar.tsx:432[39m
+
+[90m    src/components/Navbar.tsx:436[39m
+
+[90m    src/components/Navbar.tsx:440[39m
+
+[90m    src/components/Navbar.tsx:444[39m
+
+[90m    src/components/Navbar.tsx:448[39m
+
+[90m    src/components/SavedJobs.tsx:58[39m
+
+[90m    src/components/SavedJobs.tsx:91[39m
+
+[90m    src/components/SavedJobs.tsx:114[39m
+
+[90m    src/components/SettingsPanel.tsx:175[39m
+
+[90m    src/components/SettingsPanel.tsx:193[39m
+
+[90m    src/components/SettingsPanel.tsx:211[39m
+
+[90m    src/components/SettingsPanel.tsx:265[39m
+
+[90m    src/components/SettingsPanel.tsx:311[39m
+
+[90m    src/components/SettingsPanel.tsx:400[39m
+
+[90m    src/components/SettingsPanel.tsx:421[39m
+
+[90m    src/components/SettingsPanel.tsx:441[39m
+
+[90m    src/components/SettingsPanel.tsx:462[39m
+
+[90m    src/components/SidebarFilters.tsx:49[39m
+
+[90m    src/components/SidebarFilters.tsx:90[39m
+
+[90m    src/components/UserProfilePanel.tsx:432[39m
+
+  [33mΓÜá[39m [33mAccessibility: Control missing accessible label[39m [90m├ù22[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/control-has-associated-label[39m
+    Blind users can't tell what this control does because
+    screen readers find no label, so add visible text,
+    `aria-label`, or `aria-labelledby`.
+[2m    ΓåÆ Give every interactive control a label screen readers can[22m
+[2m    read.[22m
+
+[90m    src/App.tsx:562[39m
+
+[90m    src/components/ApplicationsTracker.tsx:465[39m
+
+[90m    src/components/ChatbotPanel.tsx:436[39m
+
+[90m    src/components/FeedbackRetrainingPanel.tsx:116[39m
+
+[90m    src/components/FeedbackRetrainingPanel.tsx:155[39m
+
+[90m    src/components/JobCard.tsx:291[39m
+
+[90m    src/components/JobScraper.tsx:116[39m
+
+[90m    src/components/LoginPage.tsx:280[39m
+
+[90m    src/components/LoginPage.tsx:306[39m
+
+[90m    src/components/LoginPage.tsx:331[39m
+
+[90m    src/components/Navbar.tsx:64[39m
+
+[90m    src/components/Navbar.tsx:351[39m
+
+[90m    src/components/Navbar.tsx:375[39m
+
+[90m    src/components/SavedJobs.tsx:79[39m
+
+[90m    src/components/SettingsPanel.tsx:288[39m
+
+[90m    src/components/SidebarFilters.tsx:68[39m
+
+[90m    src/components/UserProfilePanel.tsx:204[39m
+
+[90m    src/components/UserProfilePanel.tsx:225[39m
+
+[90m    src/components/UserProfilePanel.tsx:282[39m
+
+[90m    src/components/UserProfilePanel.tsx:329[39m
+
+[90m    src/components/UserProfilePanel.tsx:375[39m
+
+[90m    src/components/UserProfilePanel.tsx:395[39m
+
+  [33mΓÜá[39m [33mMaintainability: Pure function rebuilt every render[39m [90m├ù2[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/prefer-module-scope-pure-function[39m
+    `compileOutreachDraft` inside `ApplicationsTracker` uses no
+    local state but is rebuilt on every render, so it wastes
+    work & breaks memoized children. Move it to the top of the
+    file, outside the component.
+[2m    ΓåÆ Move the function above the component, at the top of the[22m
+[2m    file. It doesn't use local state, so rebuilding it each[22m
+[2m    update is wasted work.[22m
+
+[90m    src/components/ApplicationsTracker.tsx:137[39m
+
+[90m    src/components/JobCard.tsx:80[39m
+
+  [33mΓÜá[39m [33mAccessibility: Label missing associated control[39m [90m├ù26[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/label-has-associated-control[39m
+    Screen reader users can't tell which input this label names
+    because it's tied to none, so add `htmlFor` or wrap the
+    input inside it.
+[2m    ΓåÆ Tie every label to a control with `htmlFor`, or by[22m
+[2m    nesting the input.[22m
+
+[90m    src/components/ApplicationsTracker.tsx:216[39m
+
+[90m    src/components/FeedbackRetrainingPanel.tsx:98[39m
+
+[90m    src/components/FeedbackRetrainingPanel.tsx:115[39m
+
+[90m    src/components/FeedbackRetrainingPanel.tsx:130[39m
+
+[90m    src/components/FeedbackRetrainingPanel.tsx:154[39m
+
+[90m    src/components/JobScraper.tsx:103[39m
+
+[90m    src/components/LoginPage.tsx:273[39m
+
+[90m    src/components/LoginPage.tsx:299[39m
+
+[90m    src/components/LoginPage.tsx:324[39m
+
+[90m    src/components/Navbar.tsx:261[39m
+
+[90m    src/components/Navbar.tsx:289[39m
+
+[90m    src/components/Navbar.tsx:308[39m
+
+[90m    src/components/Navbar.tsx:326[39m
+
+[90m    src/components/Navbar.tsx:346[39m
+
+[90m    src/components/Navbar.tsx:370[39m
+
+[90m    src/components/SidebarFilters.tsx:67[39m
+
+[90m    src/components/SidebarFilters.tsx:83[39m
+
+[90m    src/components/SidebarFilters.tsx:122[39m
+
+[90m    src/components/UserProfilePanel.tsx:202[39m
+
+[90m    src/components/UserProfilePanel.tsx:223[39m
+
+[90m    src/components/UserProfilePanel.tsx:246[39m
+
+[90m    src/components/UserProfilePanel.tsx:280[39m
+
+[90m    src/components/UserProfilePanel.tsx:327[39m
+
+[90m    src/components/UserProfilePanel.tsx:374[39m
+
+[90m    src/components/UserProfilePanel.tsx:394[39m
+
+[90m    src/components/UserProfilePanel.tsx:414[39m
+
+  [33mΓÜá[39m [33mMaintainability: Static value rebuilt every render[39m [90m├ù4[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/prefer-module-scope-static-value[39m
+    `suggestedQuestions` inside `ChatbotPanel` uses no local
+    state but is rebuilt every render, so it looks new each
+    time & breaks memoized children. Move it to the top of the
+    file, outside the component.
+[2m    ΓåÆ Move the value above the component, at the top of the[22m
+[2m    file. It doesn't use local state, so rebuilding it each[22m
+[2m    update is wasted and makes it look new every time.[22m
+
+[90m    src/components/ChatbotPanel.tsx:49[39m
+
+[90m    src/components/JobScraper.tsx:17[39m
+
+[90m    src/components/SidebarFilters.tsx:24[39m
+
+[90m    src/components/SidebarFilters.tsx:30[39m
+
+  [33mΓÜá[39m [33mBugs: Data passed to parent via effect[39m [90m├ù2[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-pass-data-to-parent[39m
+    Handing data back to a parent from a useEffect costs your
+    users an extra render.
+[2m    ΓåÆ Fetch the data in the parent and pass it down as a prop[22m
+[2m    (or return it from the hook), instead of handing it back up[22m
+[2m    through a prop callback in a useEffect. See[22m
+[2m    https://react.dev/learn/you-might-not-need-an-effect#passing-data-to-the-parent[22m
+
+[90m    src/components/ChatbotPanel.tsx:57[39m
+
+[90m    src/components/ChatbotPanel.tsx:229[39m
+
+  [33mΓÜá[39m [33mBugs: Live state pushed to parent via effect[39m [90m├ù2[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-pass-live-state-to-parent[39m
+    Pushing state up to a parent from a useEffect costs your
+    users an extra render.
+[2m    ΓåÆ Move the state up to the parent (or return it from the[22m
+[2m    hook), instead of handing it back up through a prop[22m
+[2m    callback in a useEffect. See[22m
+[2m    https://react.dev/learn/you-might-not-need-an-effect#notifying-parent-components-about-state-changes[22m
+
+[90m    src/components/ChatbotPanel.tsx:57[39m
+
+[90m    src/components/ChatbotPanel.tsx:229[39m
+
+  [33mΓÜá[39m [33mBugs: Array index used as a key[39m [90m├ù2[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-array-index-as-key[39m
+    Your users can see & submit the wrong data when this list
+    reorders or filters, so use a stable id like
+    `key={item.id}`, not the array index "index".
+[2m    ΓåÆ Use a stable id from the item, like `key={item.id}` or[22m
+[2m    `key={item.slug}`. Index keys break when the list reorders[22m
+[2m    or filters.[22m
+
+[90m    src/components/ChatbotPanel.tsx:332[39m
+
+[90m    src/components/SettingsPanel.tsx:332[39m
+
+  [33mΓÜá[39m [33mPerformance: Overly precise SVG path values[39m [90m├ù2[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/rendering-svg-precision[39m
+    Your users download extra bytes for SVG d precision they
+    can't see, so round it to 1 or 2 decimals.
+[2m    ΓåÆ Round path, points, and transform decimals to 1 or 2[22m
+[2m    digits. The extra precision adds bytes with no visible[22m
+[2m    difference.[22m
+
+[90m    src/components/KairosLogo.tsx:44[39m
+
+[90m    src/components/KairosLogo.tsx:50[39m
+
+  [33mΓÜá[39m [33mPerformance: State only used in handlers[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/rerender-state-only-in-handlers[39m
+    Each update to "profile" redraws your component for nothing
+    because this useState is set but never shown on screen.
+[2m    ΓåÆ Use useRef instead of useState when the value is only set[22m
+[2m    and never shown on screen. `ref.current = ...` updates it[22m
+[2m    without redrawing the component.[22m
+
+[90m    src/components/SettingsPanel.tsx:30[39m
+
+  [33mΓÜá[39m [33mPerformance: await inside a loop[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/async-await-in-loop[39m
+    This makes the forΓÇªof loop slow because each await runs one
+    after another, so collect the independent calls & run them
+    together with `await Promise.all(items.map(...))`
+[2m    ΓåÆ Collect the items, then use `await[22m
+[2m    Promise.all(items.map(...))` so independent work runs at[22m
+[2m    the same time[22m
+
+[90m    src/components/SettingsPanel.tsx:103[39m
+
+  [33mΓÜá[39m [33mAccessibility: Click handler missing keyboard handler[39m [90m├ù3[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/click-events-have-key-events[39m
+    Keyboard users can't trigger this click handler because
+    there's no keyboard one, so add `onKeyUp`, `onKeyDown`, or
+    `onKeyPress`.
+[2m    ΓåÆ Pair `onClick` with a key handler so keyboard users can[22m
+[2m    trigger it.[22m
+
+[90m    src/components/UserProfilePanel.tsx:307[39m
+
+[90m    src/components/UserProfilePanel.tsx:354[39m
+
+[90m    src/components/UserProfilePanel.tsx:446[39m
+
+  [33mΓÜá[39m [33mAccessibility: Interaction on static element[39m [90m├ù3[39m
+    [36mLearn more: https://react.doctor/docs/rules/react-doctor/no-static-element-interactions[39m
+    Screen reader users can't tell this click handler is
+    interactive because it has no `role`, so add a `role` or
+    use a button or link.
+[2m    ΓåÆ Give clickable static elements a `role`, or use a button[22m
+[2m    or link.[22m
+
+[90m    src/components/UserProfilePanel.tsx:307[39m
+
+[90m    src/components/UserProfilePanel.tsx:354[39m
+
+[90m    src/components/UserProfilePanel.tsx:446[39m
+
+
+[2m  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[22m
+
+  [1mAll 193 issues[22m
+
+  [1mBugs[22m [2m>[22m [31m1 error[39m[2m, [22m[33m[2m112 warnings[22m[39m
+  [1mPerformance[22m [2m>[22m [33m[2m10 warnings[22m[39m
+  [1mAccessibility[22m [2m>[22m [31m1 error[39m[2m, [22m[33m[2m54 warnings[22m[39m
+  [1mMaintainability[22m [2m>[22m [33m[2m15 warnings[22m[39m
+
+[1mAgent guidance[22m
+[90m  - Treat React Doctor diagnostics as starting hypotheses. Read the relevant code before confirming or suppressing each finding.[39m
+[90m  - For each group, decide true positive, false positive, or needs-human-review, then assign high/medium/low confidence.[39m
+[90m  - Do not suppress a finding without evidence from the file in question. Confidence requires code context.[39m
+[90m  - Understand the root cause before editing. Fix the underlying code instead of changing react-doctor config or suppressing rules unless explicitly asked.[39m
+[90m  - Investigate deeply where relevant: race conditions, security-sensitive flows, state propagation, multi-file refactors, and downstream dependency chains.[39m
+[90m  - Ignore pure style preferences, theoretical issues without real impact, missing features, and unrelated pre-existing code.[39m
+[90m  - Start with high-confidence fixes that preserve behavior. Leave low-confidence or product-dependent changes as notes.[39m
+[90m  - Run `npx react-doctor@latest --verbose --scope changed` before and after changes, plus relevant tests after each focused batch.[39m
+[90m  - When available, spawn subagents or isolated worktrees for independent rule families, then review and merge only the best safe fixes.[39m
+[90m  - Split unrelated, broad, or behavior-changing work into separate PRs/branches instead of one large cleanup.[39m
+[90m  - When one rule spans dozens of files (a migration-scale change), fix a representative sample first, confirm the recipe holds, and get the code owner's sign-off before changing the rest. Don't mass-fix a broad pattern in one unreviewed pass.[39m
+[90m  - For confirmed issues that cannot be fixed now, create GitHub issues with the rule, file/line, confidence, impact, and proposed fix.[39m
+[90m  - If a fix needs an API, UX, or architecture decision, stop and ask before editing.[39m
+
+  React Doctor [2m(https://react.doctor)[22m
+  [90mScore unavailable (could not reach the score API). Want something custom to your company? Contact us at https://react.doctor/enterprise.[39m
+
+[90m  Full diagnostics written to C:\Users\Admin\AppData\Local\Temp\react-doctor-0a27e147-9621-4136-b59b-67b855d6f54d[39m
+
+[2m  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[22m
+
+  [1mDocs:[22m [36mhttps://react.doctor/docs[39m
+[2m  Learn more about fixing issues, setting up CI/CD, and[22m
+[2m  configuring rules with a config file[22m
+
+  [1mGitHub:[22m [36mhttps://github.com/millionco/react-doctor[39m
+[2m  Report issues and star the repository![22m
+

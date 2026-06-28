@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+pymongo
+redis
+firebase-admin
+python-dotenv
+groq

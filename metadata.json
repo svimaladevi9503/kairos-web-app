@@ -1,0 +1,6 @@
+{
+  "name": "Kairos",
+  "description": "An AI-powered inclusive job portal for differently-abled individuals featuring accommodation-aware listings, conversational discovery, and automated follow-ups.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
