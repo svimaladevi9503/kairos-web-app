@@ -15,7 +15,7 @@ Kairos is a specialized career portal designed to bridge the gap between digital
 
 - **Frontend:** React 19, Vite, Tailwind CSS (v4)
 - **Icons:** Lucide React
-- **AI Integrations:** Google Gemini API, Groq, Mistral, Hugging Face, OpenRouter
+- **AI & Data Integrations:** Google Gemini API, Groq, Mistral, Hugging Face, OpenRouter, Apify
 - **State Management:** React `useReducer` and Custom Hooks
 
 ## 🛠️ Run Locally
@@ -30,8 +30,9 @@ Kairos is a specialized career portal designed to bridge the gap between digital
 2. **Environment Configuration:**
    Set up your AI API Keys in a `.env.local` file (or provide them through the app's settings when available). For example:
    ```env
-   VITE_GEMINI_API_KEY=your_gemini_api_key
-   VITE_GROQ_API_KEY=your_groq_api_key
+   GEMINI_API_KEY=your_gemini_api_key
+   GROQ_API_KEY=your_groq_api_key
+   APIFY_API_TOKEN=your_apify_token
    ```
 
 3. **Start the Development Server:**
