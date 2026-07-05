@@ -16,6 +16,7 @@ export interface IJob extends Document {
   };
   aiSummary: string;
   isActive: boolean;
+  shareLink?: string;
 }
 
 const JobSchema: Schema = new Schema(
@@ -35,6 +36,7 @@ const JobSchema: Schema = new Schema(
     },
     aiSummary: { type: String, default: "" },
     isActive: { type: Boolean, default: true },
+    shareLink: { type: String, default: null },
   },
   { timestamps: true }
 );

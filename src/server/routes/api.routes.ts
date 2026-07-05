@@ -211,7 +211,7 @@ apiRouter.post("/apply", async (req, res) => {
     });
 
     await RedisService.queueApplicationFollowUp("user_123", job._id.toString());
-    res.status(201).json({ ...newApp.toObject(), id: newApp._id.toString() });
+    res.status(201).json({ ...newApp!.toObject(), id: newApp!._id.toString() });
   } catch (err) {
     res.status(500).json({ error: "Failed to apply" });
   }

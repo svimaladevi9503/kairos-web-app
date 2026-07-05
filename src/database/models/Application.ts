@@ -7,6 +7,7 @@ export interface IApplication extends Document {
   status: "applied" | "interviewing" | "rejected" | "link_decayed";
   decayNotificationChannel: string | null;
   decayMessage: string | null;
+  shareLink?: string;
 }
 
 const ApplicationSchema: Schema = new Schema(
@@ -17,6 +18,7 @@ const ApplicationSchema: Schema = new Schema(
     status: { type: String, enum: ["applied", "interviewing", "rejected", "link_decayed"], default: "applied" },
     decayNotificationChannel: { type: String, default: null },
     decayMessage: { type: String, default: null },
+    shareLink: { type: String, default: null },
   },
   { timestamps: true }
 );
