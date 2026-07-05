@@ -1,4 +1,7 @@
 import time
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 from database import db_service
 from scraper import kairos_scraper
 from n8n_client import n8n_client

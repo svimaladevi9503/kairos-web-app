@@ -1,8 +1,10 @@
 import os
 import sys
 from dotenv import load_dotenv
+# pyrefly: ignore [missing-import]
 from pymongo import MongoClient
 import redis
+# pyrefly: ignore [missing-import]
 import firebase_admin
 from firebase_admin import credentials, firestore, storage
 
@@ -52,7 +54,7 @@ class DatabaseService:
             print("[Firebase] Warning: serviceAccountKey.json not found. n8n Dynamic Links will fail.")
 
     def get_jobs_collection(self):
-        return self.db.jobs if self.db else None
+        return self.db.jobs if self.db is not None else None
 
     def cache_set(self, key, value, ex=3600):
         if self.redis_client:
