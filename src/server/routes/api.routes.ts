@@ -13,6 +13,7 @@ import {
   callMistral, 
   generateEmbeddingsHF 
 } from "../services/ai.service";
+import { createShortLink } from "../services/shortlink.service";
 
 export const apiRouter = express.Router();
 
@@ -199,11 +200,14 @@ apiRouter.post("/apply", async (req, res) => {
     const exists = await Application.findOne({ jobId });
     if (exists) return res.json({ ...exists.toObject(), id: exists._id.toString() });
 
+    const shareLink = await createShortLink(job._id.toString(), job.url);
+
     const newApp = await Application.create({
       jobId: job._id.toString(),
       job,
       appliedAt: "Just now",
       status: "applied",
+      shareLink,
     });
 
     await RedisService.queueApplicationFollowUp("user_123", job._id.toString());
@@ -229,12 +233,15 @@ apiRouter.post("/trigger-decay", async (req, res) => {
     targetApp.decayNotificationChannel = channel || "WhatsApp";
 
     let message = "";
+    const shortUrl = targetApp.shareLink || (targetApp.job && targetApp.job.shareLink) || "/s/fallback";
+    const fullLink = req.protocol + "://" + req.get("host") + shortUrl;
+
     if (channel === "WhatsApp") {
-      message = `🔔 *Kairos Automated Alert* 🔔\nHi there! Our automation detected that the original listing for *${targetApp.job.title}* at *${targetApp.job.company}* has expired.\n\nWe have automatically moved this to your *Follow-Up Tracker*.`;
+      message = `🔔 *Kairos Automated Alert* 🔔\nHi there! Our automation detected that the original listing for *${targetApp.job.title}* at *${targetApp.job.company}* has expired.\n\nWe have automatically moved this to your *Follow-Up Tracker*.\nView details here: ${fullLink}`;
     } else if (channel === "Telegram") {
-      message = `✈️ *Kairos Follow-Up Bot* ✈️\n⚠️ ALERT: The listing for *${targetApp.job.title}* (${targetApp.job.company}) is no longer active.\n\nWe've flagged this in your Applied Dashboard under "Follow-Up".`;
+      message = `✈️ *Kairos Follow-Up Bot* ✈️\n⚠️ ALERT: The listing for *${targetApp.job.title}* (${targetApp.job.company}) is no longer active.\n\nWe've flagged this in your Applied Dashboard under "Follow-Up".\nSecure link: ${fullLink}`;
     } else {
-      message = `✉️ Kairos Application Follow-Up Service ✉️\n\nSubject: Follow-up Alert: ${targetApp.job.title} link expired\n\nDear Job Seeker,\n\nOur automated workflow has detected that the job page for ${targetApp.job.title} at ${targetApp.job.company} has been removed. \n\nWe have updated your status to "Follow-Up Required".`;
+      message = `✉️ Kairos Application Follow-Up Service ✉️\n\nSubject: Follow-up Alert: ${targetApp.job.title} link expired\n\nDear Job Seeker,\n\nOur automated workflow has detected that the job page for ${targetApp.job.title} at ${targetApp.job.company} has been removed. \n\nWe have updated your status to "Follow-Up Required".\n\nYou can access your saved application details here: ${fullLink}`;
     }
 
     targetApp.decayMessage = message;
@@ -348,6 +355,9 @@ Output nothing except the JSON data.`;
       isActive: true,
     });
     
+    const shareLink = await createShortLink(newJob._id.toString(), newJob.url);
+    await Job.findByIdAndUpdate(newJob._id, { $set: { shareLink } });
+
     await RedisService.cacheJobListing("all_jobs", null, 0);
     return res.status(201).json({ ...newJob.toObject(), id: newJob._id.toString() });
   } catch (err) {

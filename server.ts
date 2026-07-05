@@ -8,6 +8,7 @@ import fs from "fs";
 
 import { MongoService } from "./src/database/mongodb";
 import { apiRouter } from "./src/server/routes/api.routes";
+import { resolveShortLink } from "./src/server/services/shortlink.service";
 
 if (fs.existsSync(".env.local")) {
   dotenv.config({ path: ".env.local" });
@@ -22,6 +23,12 @@ app.use(express.json());
 
 // API Routes
 app.use("/api", apiRouter);
+
+app.get("/s/:code", async (req, res) => {
+  const result = await resolveShortLink(req.params.code);
+  if (!result) return res.status(404).send("Link not found");
+  res.redirect(302, result.redirectTo);
+});
 
 // Configure Vite integration or static file server
 async function startServer() {

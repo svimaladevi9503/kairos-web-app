@@ -13,37 +13,13 @@ class N8nClient:
         self.firebase_web_api_key = os.environ.get("VITE_FIREBASE_API_KEY")
 
     def generate_dynamic_link(self, job_id, fallback_url):
-        """Generates a Firebase Dynamic Link via REST API so it can survive link decay."""
-        if not self.firebase_web_api_key:
-            return fallback_url
-            
-        endpoint = f"https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key={self.firebase_web_api_key}"
-        payload = {
-            "dynamicLinkInfo": {
-                "domainUriPrefix": "https://kairos.page.link",
-                "link": f"https://kairos.inclusive/jobs?id={job_id}",
-                "androidInfo": {
-                    "androidPackageName": "com.kairos.app"
-                },
-                "iosInfo": {
-                    "iosBundleId": "com.kairos.app"
-                }
-            },
-            "suffix": {
-                "option": "SHORT"
-            }
-        }
-        
-        try:
-            res = requests.post(endpoint, json=payload)
-            if res.status_code == 200:
-                return res.json().get("shortLink", fallback_url)
-            else:
-                print(f"[n8n Client] Failed to generate dynamic link: {res.text}")
-                return fallback_url
-        except Exception as e:
-            print(f"[n8n Client] Dynamic link error: {e}")
-            return fallback_url
+        import secrets
+        code = secrets.token_hex(4)
+        db_service.db.shortlinks.insert_one({
+            "code": code, "jobId": str(job_id),
+            "originalUrl": fallback_url, "isActive": True
+        })
+        return f"https://your-kairos-domain.com/s/{code}"
 
     def trigger_alert(self, job_dict, channel="WhatsApp", user_id="user_123"):
         """Sends a payload to the n8n webhook for automated distribution."""
