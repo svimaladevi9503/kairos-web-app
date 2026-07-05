@@ -19,20 +19,31 @@ class N8nClient:
             "code": code, "jobId": str(job_id),
             "originalUrl": fallback_url, "isActive": True
         })
-        return f"https://your-kairos-domain.com/s/{code}"
+        base_url = os.environ.get("APP_BASE_URL", "http://localhost:3000")
+        return f"{base_url}/s/{code}"
 
     def trigger_alert(self, job_dict, channel="WhatsApp", user_id="user_123"):
         """Sends a payload to the n8n webhook for automated distribution."""
-        
-        # 1. Generate the resilient dynamic link
+
+        profile = db_service.db.userprofiles.find_one({}) or {}
+        contact_map = {
+            "WhatsApp": profile.get("phone", ""),
+            "Telegram": profile.get("telegramChatId", ""),
+            "Email": profile.get("email", "")
+        }
+        contact = contact_map.get(channel, "")
+        if not contact:
+            print(f"[n8n Client] No {channel} contact on file for user {user_id}, skipping.")
+            return False
+
         job_id = str(job_dict.get("_id", job_dict.get("id", "unknown")))
         original_url = job_dict.get("url", "https://kairos.inclusive/jobs")
         dynamic_link = self.generate_dynamic_link(job_id, original_url)
-        
-        # 2. Build the payload matching the expected n8n schema
+
         payload = {
             "userId": user_id,
-            "channel": channel,  # e.g. "WhatsApp", "Telegram", "Email"
+            "channel": channel,
+            "contact": contact,
             "job": {
                 "title": job_dict.get("title"),
                 "company": job_dict.get("company"),

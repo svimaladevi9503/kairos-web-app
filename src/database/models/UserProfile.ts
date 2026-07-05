@@ -3,12 +3,14 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IUserProfile extends Document {
   name: string;
   email: string;
+  phone: string;
+  telegramChatId: string;
   skills: string[];
   experience: string;
   education: string;
   suitabilityCategories: string[];
   accommodationRequirements: string[];
-  resume: any; // URL to Firebase Storage
+  resume: any;
   autoApply: boolean;
 }
 
@@ -16,6 +18,8 @@ const UserProfileSchema: Schema = new Schema(
   {
     name: { type: String, default: "" },
     email: { type: String, default: "" },
+    phone: { type: String, default: "" },
+    telegramChatId: { type: String, default: "" },
     skills: { type: [String], default: [] },
     experience: { type: String, default: "" },
     education: { type: String, default: "" },

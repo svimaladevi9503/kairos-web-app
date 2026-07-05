@@ -246,8 +246,38 @@ apiRouter.post("/trigger-decay", async (req, res) => {
 
     targetApp.decayMessage = message;
     await targetApp.save();
-    
+
     await RedisService.updateNotificationStatus(applicationId, "sent");
+
+    // Actually trigger the n8n automation
+    const profile: any = await UserProfile.findOne().lean();
+    const contactMap: Record<string, string> = {
+      WhatsApp: profile?.phone || "",
+      Telegram: profile?.telegramChatId || "",
+      Email: profile?.email || "",
+    };
+    const resolvedChannel = channel || "WhatsApp";
+    const contact = contactMap[resolvedChannel];
+
+    if (contact) {
+      try {
+        await fetch(process.env.N8N_WEBHOOK_URL || "http://localhost:5678/webhook/kairos-job-alert", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: "user_123",
+            channel: resolvedChannel,
+            contact,
+            job: targetApp.job,
+            message,
+          }),
+        });
+      } catch (webhookErr) {
+        console.warn("[trigger-decay] n8n webhook call failed:", webhookErr);
+      }
+    } else {
+      console.warn(`[trigger-decay] No ${resolvedChannel} contact on profile, skipping n8n dispatch.`);
+    }
 
     res.json({ ...targetApp.toObject(), id: targetApp._id.toString() });
   } catch (err) {
