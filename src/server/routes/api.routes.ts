@@ -71,7 +71,7 @@ apiRouter.post("/profile", async (req, res) => {
       profile = await UserProfile.create(updateData);
     }
 
-    await RedisService.cacheJobListing("all_jobs", null, 0); 
+    await RedisService.deleteCachedListing("all_jobs"); 
     res.json({ message: "Profile updated successfully", profile });
   } catch (err) {
     res.status(500).json({ error: "Failed to update profile" });
@@ -227,7 +227,7 @@ apiRouter.post("/trigger-decay", async (req, res) => {
     if (!targetApp) return res.status(404).json({ error: "Application not found" });
 
     await Job.findByIdAndUpdate(targetApp.jobId, { isActive: false });
-    await RedisService.cacheJobListing("all_jobs", null, 0);
+    await RedisService.deleteCachedListing("all_jobs");
 
     targetApp.job.isActive = false;
     targetApp.status = "link_decayed";
@@ -389,7 +389,7 @@ Output nothing except the JSON data.`;
     const shareLink = await createShortLink(newJob._id.toString(), newJob.url);
     await Job.findByIdAndUpdate(newJob._id, { $set: { shareLink } });
 
-    await RedisService.cacheJobListing("all_jobs", null, 0);
+    await RedisService.deleteCachedListing("all_jobs");
     return res.status(201).json({ ...newJob.toObject(), id: newJob._id.toString() });
   } catch (err) {
     return res.status(500).json({ error: "Failed to save parsed job to MongoDB." });
@@ -421,7 +421,10 @@ apiRouter.post("/trigger-scraper", async (req, res) => {
   // Note: assumes python is in PATH and the working directory is the project root
   const pythonProcess = spawn("python", ["scraper/main.py", ...args]);
 
+  let stdoutData = "";
+
   pythonProcess.stdout.on("data", (data) => {
+    stdoutData += data.toString();
     console.log(`[Scraper Output] ${data.toString()}`);
   });
 
@@ -429,9 +432,29 @@ apiRouter.post("/trigger-scraper", async (req, res) => {
     console.error(`[Scraper Error] ${data.toString()}`);
   });
 
-  pythonProcess.on("close", (code) => {
+  pythonProcess.on("close", async (code) => {
     console.log(`[Scraper] Process exited with code ${code}`);
-  });
+    if (code !== 0) {
+      return res.status(500).json({ error: "Scraper process failed with non-zero exit code." });
+    }
 
-  return res.status(202).json({ message: "Scraper process started asynchronously" });
+    const match = stdoutData.match(/\[MongoDB\] Job successfully inserted with ID: ([a-f0-9]{24})/);
+    if (match && match[1]) {
+      try {
+        const jobId = match[1];
+        const newJob = await Job.findById(jobId).lean();
+        if (newJob) {
+          let profile: any = await UserProfile.findOne().lean();
+          if (!profile) profile = { suitabilityCategories: [], skills: [], accommodationRequirements: [] };
+          const compMatch = computeCompatibility(newJob, profile);
+          
+          return res.status(200).json({ ...newJob, id: newJob._id.toString(), ...compMatch });
+        }
+      } catch (err) {
+        return res.status(500).json({ error: "Failed to fetch inserted job." });
+      }
+    }
+    
+    return res.status(404).json({ error: "No job could be extracted from that URL." });
+  });
 });

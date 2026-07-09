@@ -18,6 +18,14 @@ Kairos is a specialized career portal designed to bridge the gap between digital
 - **AI & Data Integrations:** Google Gemini API, Groq, Mistral, Hugging Face, OpenRouter, Apify
 - **State Management:** React `useReducer` and Custom Hooks
 
+## ⚠️ Demo Limitations & Scope
+
+As this project is configured for a single-user demonstration, certain enterprise-grade features have been intentionally scoped out:
+- **Authentication:** There is no JWT or OAuth layer. The application uses a single hardcoded identifier (`"user_123"`) to demonstrate user profile capabilities.
+- **Security & Validation:** Incoming API requests lack a rigorous input validation/sanitization layer (e.g., Zod or Joi). This should be added before production deployment.
+- **Schema Duplication:** The data extraction schema is currently duplicated between the Node.js backend and the Python scraper (`scraper/main.py`) to keep the scraper as an isolated, standalone agent.
+- **Process Management:** The backend utilizes Node's `cluster` module to fork 2 workers. This is designed to showcase production-readiness but exceeds the needs of a local demo.
+
 ## 🛠️ Run Locally
 
 **Prerequisites:** Node.js (v18+ recommended)

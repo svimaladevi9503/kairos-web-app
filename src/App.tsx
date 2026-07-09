@@ -72,9 +72,13 @@ export default function App() {
         const newApp = await response.json();
         dispatch({ type: "APPLY_JOB_SUCCESS", payload: newApp });
         speakAnnouncement("Successfully applied to job position.");
+      } else {
+        throw new Error("Server returned an error");
       }
     } catch (err) {
       console.error(err);
+      speakAnnouncement("An error occurred while applying. Please try again.");
+      alert("An error occurred while applying to the job.");
     }
   };
 
@@ -89,9 +93,13 @@ export default function App() {
         const updatedApp = await response.json();
         dispatch({ type: "UPDATE_APPLICATION_DECAY", payload: { updatedApp, jobId: updatedApp.jobId } });
         speakAnnouncement(`Alert triggered. Automated ${channel} follow-up outreach draft formulated.`);
+      } else {
+        throw new Error("Server returned an error");
       }
     } catch (err) {
       console.error(err);
+      speakAnnouncement("An error occurred while triggering the alert.");
+      alert("An error occurred while simulating the automated alert.");
     }
   };
 

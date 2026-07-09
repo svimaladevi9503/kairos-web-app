@@ -19,6 +19,7 @@ const statusPhases = [
 
 type ScraperState = {
   inputText: string;
+  urlText: string;
   loading: boolean;
   statusMessage: string;
   successJob: Job | null;
@@ -27,6 +28,7 @@ type ScraperState = {
 
 type ScraperAction =
   | { type: "SET_INPUT"; payload: string }
+  | { type: "SET_URL"; payload: string }
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_STATUS"; payload: string }
   | { type: "SET_SUCCESS"; payload: Job | null }
@@ -37,6 +39,8 @@ function scraperReducer(state: ScraperState, action: ScraperAction): ScraperStat
   switch (action.type) {
     case "SET_INPUT":
       return { ...state, inputText: action.payload, errorMsg: "" };
+    case "SET_URL":
+      return { ...state, urlText: action.payload, errorMsg: "" };
     case "SET_LOADING":
       return { ...state, loading: action.payload };
     case "SET_STATUS":
@@ -55,6 +59,7 @@ function scraperReducer(state: ScraperState, action: ScraperAction): ScraperStat
 export default function JobScraper({ onJobAdded, highContrast }: JobScraperProps) {
   const [state, dispatch] = useReducer(scraperReducer, {
     inputText: "",
+    urlText: "",
     loading: false,
     statusMessage: "",
     successJob: null,
@@ -116,6 +121,39 @@ We are committed to building an inclusive workplace. We fully support screen-rea
     }
   };
 
+  const handleScrapeUrl = async () => {
+    if (!state.urlText.trim()) {
+      dispatch({ type: "SET_ERROR", payload: "Please provide a valid URL." });
+      return;
+    }
+
+    dispatch({ type: "SET_LOADING", payload: true });
+    dispatch({ type: "RESET" });
+
+    try {
+      const response = await fetch("/api/trigger-scraper", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: state.urlText }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to scrape listing.");
+      }
+
+      const parsedJob: Job = await response.json();
+      dispatch({ type: "SET_SUCCESS", payload: parsedJob });
+      onJobAdded(parsedJob);
+      dispatch({ type: "SET_URL", payload: "" });
+    } catch (err: any) {
+      console.error(err);
+      dispatch({ type: "SET_ERROR", payload: err.message || "An unexpected error occurred during scraping." });
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <JobScraperHeader highContrast={highContrast} />
@@ -126,6 +164,7 @@ We are committed to building an inclusive workplace. We fully support screen-rea
           dispatch={dispatch} 
           handlePasteSampleText={handlePasteSampleText} 
           handleClassifyJob={handleClassifyJob} 
+          handleScrapeUrl={handleScrapeUrl}
           highContrast={highContrast} 
         />
         <JobScraperResult state={state} highContrast={highContrast} />

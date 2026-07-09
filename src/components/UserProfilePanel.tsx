@@ -2,6 +2,7 @@ import React, { useReducer, useEffect } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
 import { UserProfile, Job } from "../types";
 import { UserProfileHeader, UserProfileForm, UserProfileResumeUpload, UserProfileMatches } from "./UserProfileWidgets";
+import { FirebaseService } from "../database/firebase";
 
 interface UserProfilePanelProps {
   highContrast: boolean;
@@ -103,7 +104,7 @@ export default function UserProfilePanel({ highContrast, onProfileUpdated, jobs 
     }
   };
 
-  const handleResumeFile = (file: File) => {
+  const handleResumeFile = async (file: File) => {
     dispatch({ type: "SET_RESUME_ERROR", payload: "" });
     if (!state.profile) return;
 
@@ -128,16 +129,27 @@ export default function UserProfilePanel({ highContrast, onProfileUpdated, jobs 
       return;
     }
 
-    const fakeResume = {
-      name: file.name,
-      size: file.size,
-      type: file.type || "application/octet-stream",
-      uploadedAt: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
+    try {
+      dispatch({ type: "SET_SAVING", payload: true });
+      const downloadUrl = await FirebaseService.uploadDocument((state.profile as any)._id || "user_123", file);
+      
+      const fakeResume = {
+        name: file.name,
+        size: file.size,
+        type: file.type || "application/octet-stream",
+        uploadedAt: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        url: downloadUrl
+      };
 
-    const updated = { ...state.profile, resume: fakeResume };
-    dispatch({ type: "SET_PROFILE", payload: updated });
-    handleSave(updated);
+      const updated = { ...state.profile, resume: fakeResume };
+      dispatch({ type: "SET_PROFILE", payload: updated });
+      handleSave(updated);
+    } catch (err) {
+      console.error(err);
+      dispatch({ type: "SET_RESUME_ERROR", payload: "Failed to upload file to Firebase Storage." });
+    } finally {
+      dispatch({ type: "SET_SAVING", payload: false });
+    }
   };
 
   const handleCheckboxChange = (cat: 'Vision Impaired' | 'Orally Challenged' | 'Audibly Challenged') => {

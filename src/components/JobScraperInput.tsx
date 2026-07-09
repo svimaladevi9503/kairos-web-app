@@ -6,10 +6,49 @@ export function JobScraperInput({
   dispatch,
   handlePasteSampleText,
   handleClassifyJob,
+  handleScrapeUrl,
   highContrast,
 }: any) {
   return (
     <div className="md:col-span-7 space-y-4">
+      <div className="flex flex-col gap-2">
+        <label htmlFor="urlInput" className="block text-xs font-bold uppercase tracking-wider">Live URL Scraper (Python Agent)</label>
+        <div className="flex gap-2">
+          <input
+            id="urlInput"
+            type="text"
+            value={state.urlText}
+            onChange={(e) => dispatch({ type: "SET_URL", payload: e.target.value })}
+            disabled={state.loading}
+            placeholder="https://example.com/careers/job-123"
+            className={`flex-1 p-3 rounded-xl border text-sm font-semibold focus:ring-2 focus:outline-none ${
+              highContrast
+                ? "bg-lilac-950 border-yellow-400 focus:ring-yellow-400 text-yellow-400"
+                : "bg-white border-slate-200 focus:ring-blue-500 focus:border-blue-500 text-slate-800"
+            }`}
+          />
+          <button
+            type="button"
+            onClick={handleScrapeUrl}
+            disabled={state.loading || !state.urlText.trim()}
+            className={`px-4 py-3 rounded-xl font-extrabold flex items-center justify-center transition-all ${
+              state.loading
+                ? "bg-slate-100 text-slate-400 cursor-not-allowed border"
+                : highContrast
+                ? "bg-yellow-400 text-black border border-yellow-400 hover:bg-lilac-900 hover:text-yellow-400"
+                : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+            }`}
+          >
+            {state.loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Scrape URL"}
+          </button>
+        </div>
+      </div>
+      
+      <div className="relative flex py-2 items-center">
+        <div className="flex-grow border-t border-slate-200 dark:border-zinc-700"></div>
+        <span className="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold">OR</span>
+        <div className="flex-grow border-t border-slate-200 dark:border-zinc-700"></div>
+      </div>
       <div className="flex items-center justify-between">
         <label htmlFor="jobInput" className="block text-xs font-bold uppercase tracking-wider">Paste Job Description Text</label>
         <button

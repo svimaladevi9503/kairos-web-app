@@ -41,6 +41,15 @@ export const RedisService = {
     }
   },
 
+  async deleteCachedListing(jobId: string) {
+    if (!redisClient) return;
+    try {
+      await redisClient.del(`job:${jobId}`);
+    } catch (err) {
+      console.error("[Redis] Cache delete failed:", err);
+    }
+  },
+
   /**
    * Queues an application for follow-up notifications via n8n
    */
