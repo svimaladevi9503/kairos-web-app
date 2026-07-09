@@ -85,7 +85,7 @@ apiRouter.get("/company-review/:companyName", async (req, res) => {
   const cachedReview = await RedisService.getCachedJobListing(cacheKey);
   if (cachedReview) return res.json(cachedReview);
   
-  const prompt = `Perform an AI-based web scrape simulation and accessibility audit review for the company "${companyName}".
+  const prompt = `Generate an AI-estimated accessibility audit review for the company "${companyName}".
 Specifically focus on:
 1. "Accommodations Rating & Detail"
 2. "Company Environment"
@@ -100,7 +100,7 @@ Write the response in JSON format matching the schema exactly:
   "environmentDetail": "A detailed 2-sentence description.",
   "infrastructureDetail": "A detailed 2-sentence description.",
   "webScrapedUrl": "https://example.com/accessibility-audit",
-  "scrapedAt": "Just now (Live Web Scraped)"
+  "scrapedAt": "Just now (AI-Generated Estimate)"
 }`;
 
   let finalData;
@@ -130,7 +130,7 @@ Write the response in JSON format matching the schema exactly:
         environmentDetail: `Highly respectful, asynchronous, and neuro-inclusive environment.`,
         infrastructureDetail: `Modern remote workspace packages and physically accessible facilities.`,
         webScrapedUrl: `https://${companyName.toLowerCase().replace(/\s+/g, "")}.com/accessibility-reviews`,
-        scrapedAt: "Just now (Live Web Scraped)"
+        scrapedAt: "Just now (AI-Generated Estimate)"
       };
     }
   }
