@@ -1,4 +1,4 @@
-﻿node_modules/
+node_modules/
 build/
 dist/
 coverage/
@@ -9,3 +9,5 @@ verbose-report.txt
 doctor_output_verbose.txt
 doctor_output.txt
 doctor-report.txt
+
+task.md
