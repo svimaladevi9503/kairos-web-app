@@ -5,9 +5,9 @@ Kairos is a specialized career portal designed to bridge the gap between digital
 ## 🌟 Key Features
 
 - **Accessibility-First UI:** Built-in High Contrast mode, Dark Mode, adjustable Text Scaling, and native Screen Reader Audio Guide with speech synthesis.
-- **Intelligent AI Auto-Apply Engine:** Computes dynamic compatibility scores based on your accommodation profile and auto-submits applications to highly matched jobs.
+- **Intelligent AI Auto-Apply Engine:** Computes dynamic compatibility scores based on your accommodation profile and simulates auto-submitting applications to highly matched jobs.
 - **AI Conversational Discovery (Kairos Assistant):** Ask questions about support setups, matching listings, or how to prepare accessible resumes using AI.
-- **Job Scraper & Classifier:** Simulates scraping job descriptions and classifies them based on disability suitability.
+- **Job Scraper & Classifier:** Performs live HTTP fetches of job descriptions and classifies them based on disability suitability.
 - **Proactive Match Recommendations:** Background crawlers highlight the best opportunities and tag relevant skills for recruiters.
 - **Application Tracking:** Monitor your job applications and automate follow-ups via integrated communication channels (WhatsApp, Telegram, Email).
 
@@ -64,7 +64,7 @@ Kairos utilizes a robust three-layer NoSQL database system, ensuring clearly sep
    - Utilizes Firestore and Firebase Storage.
    - Handles all user uploads including resumes, accessibility documents, and profile pictures.
    - Manages file metadata (upload timestamps, linked user IDs).
-   - Powers **Firebase Dynamic Links** for shareable, dynamic job URLs.
+   - Operates alongside a custom short-link service for shareable, dynamic job URLs.
 
 3. **Redis (Operational & Speed Layer)**
    - Manages high-speed operational data like user sessions and authentication tokens.
@@ -74,8 +74,8 @@ Kairos utilizes a robust three-layer NoSQL database system, ensuring clearly sep
 
 ### ⚙️ Automation & Fallback Pipeline
 Kairos relies heavily on **n8n automation pipelines** to coordinate data flows:
-- **Notifications:** Dynamic shareable job links are generated via Firebase and seamlessly routed through n8n for delivery to the user via WhatsApp, Telegram, or Email.
-- **Resilience Fallback:** If an originally scraped job link becomes dead or unavailable, the system automatically falls back to the internally stored MongoDB record and delivers a reconstructed Firebase Dynamic Link via n8n to ensure zero data loss for the job seeker.
+- **Notifications:** Dynamic shareable short-links are generated and seamlessly routed through n8n for delivery to the user via WhatsApp, Telegram, or Email.
+- **Resilience Fallback:** If an originally scraped job link becomes dead or unavailable, the system automatically falls back to the internally stored MongoDB record and delivers a reconstructed short-link via n8n to ensure zero data loss for the job seeker.
 
 ---
 *Kairos Systems • Continuous Calibration Enabled*

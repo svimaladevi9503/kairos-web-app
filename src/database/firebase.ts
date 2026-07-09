@@ -47,14 +47,6 @@ export const FirebaseService = {
     });
   },
 
-  /**
-   * Generates a Firebase Dynamic Link for sharing a job posting
-   */
-  async generateDynamicJobLink(jobId: string) {
-    // Requires Firebase Dynamic Links REST API or third party integration
-    console.log(`[Firebase] Generating dynamic share link for job ${jobId}`);
-    return `https://kairos.page.link/job?id=${jobId}`;
-  },
 
   /**
    * Saves file metadata (timestamps, linked user IDs) to Firestore

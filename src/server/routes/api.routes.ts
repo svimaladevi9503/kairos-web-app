@@ -1,4 +1,5 @@
 import express from "express";
+import { spawn } from "child_process";
 import { Job } from "../../database/models/Job";
 import { UserProfile } from "../../database/models/UserProfile";
 import { Application } from "../../database/models/Application";
@@ -407,4 +408,30 @@ apiRouter.post("/embed", async (req, res) => {
     console.error("Embedding error:", err);
     res.status(500).json({ error: "Failed to generate embedding" });
   }
+});
+
+// 8. POST Trigger Python Scraper
+apiRouter.post("/trigger-scraper", async (req, res) => {
+  const { url } = req.body;
+  
+  const args = url ? ["--url", url] : ["--test-run"];
+  
+  console.log(`[API] Triggering Python scraper with args: ${args.join(" ")}`);
+  
+  // Note: assumes python is in PATH and the working directory is the project root
+  const pythonProcess = spawn("python", ["scraper/main.py", ...args]);
+
+  pythonProcess.stdout.on("data", (data) => {
+    console.log(`[Scraper Output] ${data.toString()}`);
+  });
+
+  pythonProcess.stderr.on("data", (data) => {
+    console.error(`[Scraper Error] ${data.toString()}`);
+  });
+
+  pythonProcess.on("close", (code) => {
+    console.log(`[Scraper] Process exited with code ${code}`);
+  });
+
+  return res.status(202).json({ message: "Scraper process started asynchronously" });
 });

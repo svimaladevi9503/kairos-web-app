@@ -48,9 +48,12 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Kairos Job Scraper Pipeline")
     parser.add_argument("--test-run", action="store_true", help="Run a test scrape with a dummy URL")
+    parser.add_argument("--url", type=str, help="Run a scrape with a specific URL")
     args = parser.parse_args()
     
-    if args.test_run:
+    if args.url:
+        target_urls = [args.url]
+    elif args.test_run:
         target_urls = [
             "https://careers.google.com/jobs/results/141380961819796166-accessibility-software-engineer-frontend-core/"
         ]
